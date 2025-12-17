@@ -24,7 +24,7 @@ local mocha = {
    surface2  = '#585b70',
    surface1  = '#45475a',
    surface0  = '#313244',
-   base      = '#1f1f28',
+   base      = '#000000',  -- MY-CUSTOM: True black (was #1f1f28)
    mantle    = '#181825',
    crust     = '#11111b',
 }

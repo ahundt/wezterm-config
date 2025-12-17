@@ -1,5 +1,6 @@
 local gpu_adapters = require('utils.gpu-adapter')
-local backdrops = require('utils.backdrops')
+-- MY-CUSTOM: Commented out backdrops - using WezTerm default black background
+-- local backdrops = require('utils.backdrops')
 local colors = require('colors.custom')
 
 return {
@@ -12,17 +13,28 @@ return {
    underline_thickness = '1.5pt',
 
    -- cursor
+   -- MY-CUSTOM: Disabled blinking to fix phantom/ghost cursor issue with tmux/byobu
+   -- Problem: Cursor flickers and appears at wrong positions during TUI app redraws
+   -- Cause: WezTerm cursor animation conflicts with tmux status bar updates
+   -- See: https://github.com/wezterm/wezterm/issues/5560
+   --
+   -- Original blinking settings (swap with active settings below to restore):
+   -- cursor_blink_ease_in = 'EaseOut',
+   -- cursor_blink_ease_out = 'EaseOut',
+   -- default_cursor_style = 'BlinkingBlock',
+   -- cursor_blink_rate = 650,
+   --
+   -- Active: Non-blinking cursor
    animation_fps = 120,
-   cursor_blink_ease_in = 'EaseOut',
-   cursor_blink_ease_out = 'EaseOut',
-   default_cursor_style = 'BlinkingBlock',
-   cursor_blink_rate = 650,
+   default_cursor_style = 'SteadyBlock',
+   cursor_blink_rate = 0,  -- 0 disables blinking
 
    -- color scheme
    colors = colors,
 
-   -- background: pass in `true` if you want wezterm to start with focus mode on (no bg images)
-   background = backdrops:initial_options(false),
+   -- MY-CUSTOM: Commented out background - WezTerm defaults to black
+   -- To re-enable: uncomment backdrops require above and this line
+   -- background = backdrops:initial_options(false),
 
    -- scrollbar
    enable_scroll_bar = true,

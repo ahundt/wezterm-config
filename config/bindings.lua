@@ -1,6 +1,7 @@
 local wezterm = require('wezterm')
 local platform = require('utils.platform')
-local backdrops = require('utils.backdrops')
+-- MY-CUSTOM: Commented out backdrops - using WezTerm default black background
+-- local backdrops = require('utils.backdrops')
 local act = wezterm.action
 
 local mod = {}
@@ -16,17 +17,7 @@ end
 -- stylua: ignore
 local keys = {
    -- misc/useful --
-   { key = 'F1', mods = 'NONE', action = 'ActivateCopyMode' },
-   { key = 'F2', mods = 'NONE', action = act.ActivateCommandPalette },
-   { key = 'F3', mods = 'NONE', action = act.ShowLauncher },
-   { key = 'F4', mods = 'NONE', action = act.ShowLauncherArgs({ flags = 'FUZZY|TABS' }) },
-   {
-      key = 'F5',
-      mods = 'NONE',
-      action = act.ShowLauncherArgs({ flags = 'FUZZY|WORKSPACES' }),
-   },
-   { key = 'F11', mods = 'NONE',    action = act.ToggleFullScreen },
-   { key = 'F12', mods = 'NONE',    action = act.ShowDebugOverlay },
+   -- MY-CUSTOM: Removed all F-key bindings (F1-F12) to allow pass-through to terminal apps (tmux, byobu, vim)
    { key = 'f',   mods = mod.SUPER, action = act.Search({ CaseInSensitiveString = '' }) },
    {
       key = 'u',
@@ -48,12 +39,15 @@ local keys = {
       }),
    },
 
-   -- cursor movement --
-   { key = 'LeftArrow',  mods = mod.SUPER,     action = act.SendString '\u{1b}OH' },
-   { key = 'RightArrow', mods = mod.SUPER,     action = act.SendString '\u{1b}OF' },
+   -- MY-CUSTOM: cursor movement (macOS-style Cmd+Arrow for word navigation)
+   -- Cmd+Left -> word backward (Alt-b / ESC b)
+   { key = 'LeftArrow',  mods = mod.SUPER,     action = act.SendKey({ key = 'b', mods = 'ALT' }) },
+   -- Cmd+Right -> word forward (Alt-f / ESC f)
+   { key = 'RightArrow', mods = mod.SUPER,     action = act.SendKey({ key = 'f', mods = 'ALT' }) },
+   -- Cmd+Backspace -> delete to beginning of line (Ctrl-u)
    { key = 'Backspace',  mods = mod.SUPER,     action = act.SendString '\u{15}' },
 
-   -- copy/paste --
+   -- copy/paste: defaults now handle Cmd+C/V, keeping Ctrl+Shift for Linux compatibility
    { key = 'c',          mods = 'CTRL|SHIFT',  action = act.CopyTo('Clipboard') },
    { key = 'v',          mods = 'CTRL|SHIFT',  action = act.PasteFrom('Clipboard') },
 
@@ -115,52 +109,53 @@ local keys = {
       end)
    },
 
-   -- background controls --
-   {
-      key = [[/]],
-      mods = mod.SUPER,
-      action = wezterm.action_callback(function(window, _pane)
-         backdrops:random(window)
-      end),
-   },
-   {
-      key = [[,]],
-      mods = mod.SUPER,
-      action = wezterm.action_callback(function(window, _pane)
-         backdrops:cycle_back(window)
-      end),
-   },
-   {
-      key = [[.]],
-      mods = mod.SUPER,
-      action = wezterm.action_callback(function(window, _pane)
-         backdrops:cycle_forward(window)
-      end),
-   },
-   {
-      key = [[/]],
-      mods = mod.SUPER_REV,
-      action = act.InputSelector({
-         title = 'InputSelector: Select Background',
-         choices = backdrops:choices(),
-         fuzzy = true,
-         fuzzy_description = 'Select Background: ',
-         action = wezterm.action_callback(function(window, _pane, idx)
-            if not idx then
-               return
-            end
-            ---@diagnostic disable-next-line: param-type-mismatch
-            backdrops:set_img(window, tonumber(idx))
-         end),
-      }),
-   },
-   {
-      key = 'b',
-      mods = mod.SUPER,
-      action = wezterm.action_callback(function(window, _pane)
-         backdrops:toggle_focus(window)
-      end)
-   },
+   -- MY-CUSTOM: Commented out background controls - using default black background
+   -- To re-enable: uncomment backdrops require above and these bindings
+   -- -- background controls --
+   -- {
+   --    key = [[/]],
+   --    mods = mod.SUPER,
+   --    action = wezterm.action_callback(function(window, _pane)
+   --       backdrops:random(window)
+   --    end),
+   -- },
+   -- {
+   --    key = [[,]],
+   --    mods = mod.SUPER,
+   --    action = wezterm.action_callback(function(window, _pane)
+   --       backdrops:cycle_back(window)
+   --    end),
+   -- },
+   -- {
+   --    key = [[.]],
+   --    mods = mod.SUPER,
+   --    action = wezterm.action_callback(function(window, _pane)
+   --       backdrops:cycle_forward(window)
+   --    end),
+   -- },
+   -- {
+   --    key = [[/]],
+   --    mods = mod.SUPER_REV,
+   --    action = act.InputSelector({
+   --       title = 'InputSelector: Select Background',
+   --       choices = backdrops:choices(),
+   --       fuzzy = true,
+   --       fuzzy_description = 'Select Background: ',
+   --       action = wezterm.action_callback(function(window, _pane, idx)
+   --          if not idx then
+   --             return
+   --          end
+   --          backdrops:set_img(window, tonumber(idx))
+   --       end),
+   --    }),
+   -- },
+   -- {
+   --    key = 'b',
+   --    mods = mod.SUPER,
+   --    action = wezterm.action_callback(function(window, _pane)
+   --       backdrops:toggle_focus(window)
+   --    end)
+   -- },
 
    -- panes --
    -- panes: split panes
@@ -239,7 +234,13 @@ local key_tables = {
 }
 
 local mouse_bindings = {
-   -- Ctrl-click will open the link under the mouse cursor
+   -- MY-CUSTOM: Cmd-click (macOS) to open links
+   {
+      event = { Up = { streak = 1, button = 'Left' } },
+      mods = 'SUPER',
+      action = act.OpenLinkAtMouseCursor,
+   },
+   -- Ctrl-click also works (Linux/Windows style)
    {
       event = { Up = { streak = 1, button = 'Left' } },
       mods = 'CTRL',
@@ -248,7 +249,9 @@ local mouse_bindings = {
 }
 
 return {
-   disable_default_key_bindings = true,
+   -- MY-CUSTOM: Changed to false to restore standard macOS shortcuts (Cmd+Q, Cmd+C, etc.)
+   -- The keys defined above will override defaults where specified
+   disable_default_key_bindings = false,
    -- disable_default_mouse_bindings = true,
    leader = { key = 'Space', mods = mod.SUPER_REV },
    keys = keys,
